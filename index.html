@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LandShield Pro Enterprise - Cloud Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-dark: #070B19;
+            --sidebar-bg: #0B1120;
+            --card-bg: #0F172A;
+            --card-border: #1E293B;
+            --accent-blue: #0284C7;
+            --accent-cyan: #38BDF8;
+            --accent-purple: #8B5CF6;
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --status-green: #22C55E;
+            --status-yellow: #EAB308;
+            --status-red: #EF4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Cloud Live Banner Header */
+        .cloud-banner {
+            background: linear-gradient(90deg, #0284C7, #8B5CF6);
+            color: white;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+            padding: 6px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .sidebar {
+            width: 270px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            position: fixed;
+            top: 27px;
+            height: calc(100vh - 27px);
+            z-index: 100;
+        }
+
+        .brand-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            box-shadow: 0 0 18px rgba(2, 132, 199, 0.4);
+        }
+
+        .brand-text h2 { font-size: 16px; font-weight: 800; letter-spacing: 1px; }
+        .brand-text p { font-size: 10px; color: var(--accent-cyan); font-weight: 700; }
+
+        .role-selector {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .role-badge-btn {
+            width: 100%; padding: 10px 12px; border-radius: 8px;
+            background-color: var(--card-bg); border: 1px solid var(--card-border);
+            color: var(--text-primary); font-size: 12px; font-weight: 700;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .nav-menu {
+            display: flex; flex-direction: column; gap: 4px; padding: 15px 10px;
+            flex: 1; overflow-y: auto;
+        }
+
+        .nav-link {
+            display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+            color: var(--text-secondary); text-decoration: none; font-size: 13px;
+            font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: white; background-color: rgba(2, 132, 199, 0.15); border-left: 3px solid var(--accent-cyan);
+        }
+
+        .nav-link i { font-size: 16px; width: 20px; }
+
+        .main-wrapper {
+            margin-left: 270px; margin-top: 27px; flex: 1;
+            display: flex; flex-direction: column; min-height: calc(100vh - 27px);
+        }
+
+        .topbar {
+            height: 65px; background-color: rgba(11, 17, 32, 0.85); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--card-border); display: flex; align-items: center;
+            justify-content: space-between; padding: 0 30px; position: sticky; top: 27px; z-index: 90;
+        }
+
+        .topbar-title h2 { font-size: 18px; font-weight: 700; }
+
+        .user-profile { display: flex; align-items: center; gap: 10px; }
+        .user-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px;
+        }
+
+        .content-body { padding: 25px 30px; flex: 1; }
+        .view-section { display: none; flex-direction: column; gap: 24px; }
+        .view-section.active { display: flex; }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
+
+        .card {
+            background-color: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 12px; padding: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .card-title { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.8px; }
+
+        .stat-card { display: flex; align-items: center; gap: 16px; }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 10px;
+            background: rgba(2, 132, 199, 0.15); color: var(--accent-cyan);
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .stat-value { font-size: 22px; font-weight: 800; margin-bottom: 2px; }
+        .stat-label { font-size: 12px; color: var(--text-secondary); }
+
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th { background-color: #1E293B; color: var(--text-secondary); padding: 12px 16px; font-weight: 700; text-transform: uppercase; font-size: 11px; }
+        td { padding: 14px 16px; border-bottom: 1px solid var(--card-border); color: var(--text-primary); }
+
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .status-badge.pending { background: rgba(234, 179, 8, 0.15); color: var(--status-yellow); }
+        .status-badge.active { background: rgba(34, 197, 94, 0.15); color: var(--status-green); }
+        .status-badge.completed { background: rgba(2, 132, 199, 0.15); color: var(--accent-cyan); }
+
+        .btn-primary {
+            background-color: var(--accent-blue); color: white; border: none; padding: 10px 16px;
+            border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;
+        }
+        .btn-primary:hover { background-color: #0369a1; }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            width: 90%; max-width: 550px; border-radius: 14px; padding: 24px;
+            display: flex; flex-direction: column; gap: 16px;
+        }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select {
+            background: #1E293B; border: 1px solid var(--card-border); padding: 10px 12px;
+            border-radius: 8px; color: white; outline: none;
+        }
+
+        /* Deploy Step Guide Box */
+        .step-code {
+            background: #020617; padding: 12px; border-radius: 8px; border: 1px solid #1E293B;
+            font-family: 'Courier New', Courier, monospace; color: #38BDF8; font-size: 12px; margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cloud-banner">
+        <i class="fa-solid fa-globe"></i> LandShield Pro Platform - En Vivo para Acceso Global Web & Móvil
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <div class="brand-header">
+            <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+            <div class="brand-text">
+                <h2>LandShield Pro</h2>
+                <p>PLATAFORMA CLOUD TI</p>
+            </div>
+        </div>
+
+        <div class="role-selector">
+            <button class="role-badge-btn" id="role-toggle-btn" onclick="toggleRole()">
+                <span id="current-role-text">👑 Admin TI</span>
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </button>
+        </div>
+
+        <div class="nav-menu">
+            <a class="nav-link active" onclick="switchSection('dashboard', this)">
+                <i class="fa-solid fa-chart-pie"></i> <span>Dashboard Global</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('endpoints', this)">
+                <i class="fa-solid fa-network-wired"></i> <span>Servidores & Redes</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('pedidos', this)">
+                <i class="fa-solid fa-box-archive"></i> <span>Gestión de Pedidos</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('tienda', this)">
+                <i class="fa-solid fa-cart-plus"></i> <span>Catálogo de Servicios</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('tickets', this)">
+                <i class="fa-solid fa-ticket"></i> <span>Mesa de Tickets TI</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('facturacion', this)">
+                <i class="fa-solid fa-file-invoice-dollar"></i> <span>Facturación & Cotizaciones</span>
+            </a>
+            <a class="nav-link" onclick="switchSection('despliegue', this)">
+                <i class="fa-solid fa-cloud-arrow-up"></i> <span>Publicar en Internet</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h2 id="page-title">Dashboard de Monitoreo Global</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="user-profile">
+                    <div class="user-avatar" id="avatar-display">AD</div>
+                    <div style="font-size: 12px;">
+                        <div id="user-name-display" style="font-weight: 700;">Administrador General</div>
+                        <div id="user-role-sub" style="color: var(--text-secondary); font-size: 10px;">LandShield Ops</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-body">
+            
+            <!-- SECTION 1: DASHBOARD -->
+            <div id="sec-dashboard" class="view-section active">
+                <div class="grid-4">
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div>
+                            <div class="stat-value">99.2%</div>
+                            <div class="stat-label">SLA Cumplimiento TI</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-server"></i></div>
+                        <div>
+                            <div class="stat-value">1,480</div>
+                            <div class="stat-label">Dispositivos Globales</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-box-archive"></i></div>
+                        <div>
+                            <div class="stat-value" id="count-orders">32</div>
+                            <div class="stat-label">Pedidos Activos</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div>
+                            <div class="stat-value" style="color: var(--status-green);">$24,800</div>
+                            <div class="stat-label">Ingresos del Mes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Métricas de Tráfico y Servidores</span></div>
+                        <canvas id="metricsChart" height="200"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Alertas Activas de Seguridad</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div style="padding: 12px; background: rgba(239, 68, 68, 0.1); border-left: 3px solid var(--status-red); border-radius: 6px;">
+                                <strong style="font-size: 13px;">Ataque DDoS Mitigado</strong>
+                                <p style="font-size: 11px; color: var(--text-secondary);">Firewall Perimetral Cloud • 12,000 solicitudes bloqueadas</p>
+                            </div>
+                            <div style="padding: 12px; background: rgba(234, 179, 8, 0.1); border-left: 3px solid var(--status-yellow); border-radius: 6px;">
+                                <strong style="font-size: 13px;">SRV-SQL01 - Espacio Bajo</strong>
+                                <p style="font-size: 11px; color: var(--text-secondary);">Servidor SQL Principal requiere expansión de disco SSD</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: ENDPOINTS -->
+            <div id="sec-endpoints" class="view-section">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Infraestructura Global de Clientes</span></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Equipo / Servidor</th>
+                                    <th>IP Publica / Local</th>
+                                    <th>Sistema Operativo</th>
+                                    <th>CPU / Memoria</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Servidor Base Datos (SQL)</strong></td>
+                                    <td>190.235.12.10</td>
+                                    <td>Windows Server 2022</td>
+                                    <td>18% / 54%</td>
+                                    <td><span class="status-badge active">● Online</span></td>
+                                    <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="alert('Iniciando escaneo rápido...')">Diagnóstico</button></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Router Firewall Perimetral</strong></td>
+                                    <td>190.235.12.1</td>
+                                    <td>PfSense Cloud Edition</td>
+                                    <td>8% / 32%</td>
+                                    <td><span class="status-badge active">● Online</span></td>
+                                    <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="alert('Verificando reglas VPN...')">Reglas</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: PEDIDOS -->
+            <div id="sec-pedidos" class="view-section">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Gestión de Pedidos de Clientes</span>
+                        <button class="btn-primary" onclick="openOrderModal()"><i class="fa-solid fa-plus"></i> Crear Pedido</button>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID Pedido</th>
+                                    <th>Cliente</th>
+                                    <th>Servicio Solicitado</th>
+                                    <th>Fecha</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-table-body">
+                                <tr>
+                                    <td>#ORD-1001</td>
+                                    <td>Corporación GVA</td>
+                                    <td>Mantenimiento Preventivo de Servidores</td>
+                                    <td>15/10/2026</td>
+                                    <td>$250.00</td>
+                                    <td><span class="status-badge active">En Proceso</span></td>
+                                    <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="updateOrderStatus(this)">Aprobar / Finalizar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: TIENDA / CATÁLOGO -->
+            <div id="sec-tienda" class="view-section">
+                <div class="grid-3">
+                    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; gap:15px;">
+                        <div>
+                            <h3 style="font-size: 16px; margin-bottom: 6px;">Mantenimiento TI Integral</h3>
+                            <p style="font-size: 12px; color: var(--text-secondary);">Optimización, depuración de software y soporte preventivo completo.</p>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size: 18px; font-weight: 800; color: var(--accent-cyan);">$150.00</span>
+                            <button class="btn-primary" onclick="quickOrder('Mantenimiento TI Integral', '$150.00')">Solicitar</button>
+                        </div>
+                    </div>
+                    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between; gap:15px;">
+                        <div>
+                            <h3 style="font-size: 16px; margin-bottom: 6px;">Auditoría de Ciberseguridad</h3>
+                            <p style="font-size: 12px; color: var(--text-secondary);">Análisis de vulnerabilidades, pruebas de penetración y reporte corporativo.</p>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size: 18px; font-weight: 800; color: var(--accent-cyan);">$400.00</span>
+                            <button class="btn-primary" onclick="quickOrder('Auditoría Ciberseguridad', '$400.00')">Solicitar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 5: TICKETS -->
+            <div id="sec-tickets" class="view-section">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Soporte Técnico Directo por WhatsApp & Correo</span></div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center; padding: 20px 0;">
+                        <a href="https://wa.me/51993032328" target="_blank" class="btn-primary" style="padding: 14px 24px; font-size:14px; background-color: #22C55E;">
+                            <i class="fa-brands fa-whatsapp" style="font-size:18px;"></i> WhatsApp Directo (+51 993 032 328)
+                        </a>
+                        <a href="mailto:jiandas3115@gmail.com" class="btn-primary" style="padding: 14px 24px; font-size:14px;">
+                            <i class="fa-regular fa-envelope" style="font-size:18px;"></i> Correo jiandas3115@gmail.com
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 6: FACTURACIÓN -->
+            <div id="sec-facturacion" class="view-section">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">Facturas y Comprobantes de Pago</span></div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Factura</th>
+                                    <th>Cliente</th>
+                                    <th>Concepto</th>
+                                    <th>Total</th>
+                                    <th>Estado</th>
+                                    <th>PDF</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>F001-00920</td>
+                                    <td>Corporación GVA</td>
+                                    <td>Suscripción Mensual Soporte TI</td>
+                                    <td>$850.00</td>
+                                    <td><span class="status-badge active">Pagado</span></td>
+                                    <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="alert('Descargando PDF...')">Descargar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 7: GUÍA DE DESPLIEGUE WEB CLOUD -->
+            <div id="sec-despliegue" class="view-section">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">¿Cómo publicar esta App en Internet (100% Gratis)?</span></div>
+                    <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px;">
+                        Sigue estos 3 pasos para alojar esta página web en la nube y compartir tu enlace web mundialmente con tus clientes:
+                    </p>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="background: rgba(30, 41, 59, 0.5); padding: 15px; border-radius: 10px; border: 1px solid var(--card-border);">
+                            <strong style="color: var(--accent-cyan);">Opción 1: Vercel / Netlify (La más rápida y fácil)</strong>
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                1. Crea una cuenta gratuita en <a href="https://vercel.com" target="_blank" style="color:var(--accent-cyan)">Vercel.com</a> o <a href="https://netlify.com" target="_blank" style="color:var(--accent-cyan)">Netlify.com</a>.<br>
+                                2. Arrastra y suelta el archivo <code>index.html</code> directamente en su panel de control.<br>
+                                3. En 10 segundos te entregarán una URL global como: <code>https://landshield-pro.vercel.app</code>.
+                            </p>
+                        </div>
+
+                        <div style="background: rgba(30, 41, 59, 0.5); padding: 15px; border-radius: 10px; border: 1px solid var(--card-border);">
+                            <strong style="color: var(--accent-cyan);">Opción 2: GitHub Pages (Ideal si usas Git)</strong>
+                            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                                1. Sube tu archivo a un repositorio público en GitHub llamado <code>landshield-pro</code>.<br>
+                                2. Ve a <em>Settings -> Pages</em> y selecciona la rama <code>main</code>.<br>
+                                3. Tendrás tu dominio gratis: <code>https://tuusuario.github.io/landshield-pro/</code>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Form -->
+    <div class="modal" id="orderModal">
+        <div class="modal-content">
+            <h3 style="font-size: 16px;">Registrar Pedido de Servicio</h3>
+            <div class="form-group">
+                <label>Nombre de la Empresa</label>
+                <input type="text" id="modal-client" placeholder="Ej: Servicios SAC">
+            </div>
+            <div class="form-group">
+                <label>Servicio Requerido</label>
+                <select id="modal-service">
+                    <option>Mantenimiento TI Integral</option>
+                    <option>Auditoría de Ciberseguridad</option>
+                    <option>Configuración de Red & Firewall</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+                <button class="btn-primary" style="background: var(--card-border);" onclick="closeOrderModal()">Cancelar</button>
+                <button class="btn-primary" onclick="submitOrder()">Guardar Pedido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRole = 'admin';
+
+        window.onload = function() {
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'],
+                    datasets: [{
+                        label: 'Tráfico de Red Global (Gbps)',
+                        data: [2.1, 3.4, 4.8, 4.1, 5.9, 3.2, 2.8],
+                        borderColor: '#38BDF8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true, tension: 0.4
+                    }, {
+                        label: 'Salud del Servidor (%)',
+                        data: [98, 97, 99, 98, 96, 99, 100],
+                        borderColor: '#8B5CF6',
+                        fill: false, tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#94A3B8' } } },
+                    scales: {
+                        x: { ticks: { color: '#94A3B8' }, grid: { color: '#1E293B' } },
+                        y: { ticks: { color: '#94A3B8' }, grid: { color: '#1E293B' } }
+                    }
+                }
+            });
+        };
+
+        function toggleRole() {
+            if (currentRole === 'admin') {
+                currentRole = 'cliente';
+                document.getElementById('current-role-text').innerText = '👤 Cliente';
+                document.getElementById('user-name-display').innerText = 'Cliente Corporativo';
+                document.getElementById('avatar-display').innerText = 'CL';
+            } else {
+                currentRole = 'admin';
+                document.getElementById('current-role-text').innerText = '👑 Admin TI';
+                document.getElementById('user-name-display').innerText = 'Administrador General';
+                document.getElementById('avatar-display').innerText = 'AD';
+            }
+        }
+
+        function switchSection(secId, element) {
+            document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            document.getElementById('sec-' + secId).classList.add('active');
+            if (element) element.classList.add('active');
+
+            const titles = {
+                'dashboard': 'Dashboard de Monitoreo Global',
+                'endpoints': 'Infraestructura Global de Clientes',
+                'pedidos': 'Gestión de Pedidos de Clientes',
+                'tienda': 'Catálogo de Soluciones TI',
+                'tickets': 'Mesa de Tickets & Atención Directa',
+                'facturacion': 'Facturación & Comprobantes',
+                'despliegue': 'Guía para Publicar en Internet'
+            };
+            document.getElementById('page-title').innerText = titles[secId];
+        }
+
+        function openOrderModal() { document.getElementById('orderModal').classList.add('active'); }
+        function closeOrderModal() { document.getElementById('orderModal').classList.remove('active'); }
+
+        function submitOrder() {
+            const client = document.getElementById('modal-client').value || 'Cliente General';
+            const service = document.getElementById('modal-service').value;
+            const newId = '#ORD-' + Math.floor(1000 + Math.random() * 9000);
+
+            const tbody = document.getElementById('orders-table-body');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${newId}</td>
+                <td>${client}</td>
+                <td>${service}</td>
+                <td>15/10/2026</td>
+                <td>$200.00</td>
+                <td><span class="status-badge pending">Pendiente</span></td>
+                <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="updateOrderStatus(this)">Aprobar</button></td>
+            `;
+            tbody.prepend(newRow);
+            closeOrderModal();
+            alert('¡Pedido registrado con éxito!');
+        }
+
+        function quickOrder(serviceName, price) {
+            const clientName = prompt('Ingresa el nombre de tu empresa para confirmar el pedido:', 'Mi Empresa');
+            if (clientName) {
+                const newId = '#ORD-' + Math.floor(1000 + Math.random() * 9000);
+                const tbody = document.getElementById('orders-table-body');
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                    <td>${newId}</td>
+                    <td>${clientName}</td>
+                    <td>${serviceName}</td>
+                    <td>15/10/2026</td>
+                    <td>${price}</td>
+                    <td><span class="status-badge pending">Pendiente</span></td>
+                    <td><button class="btn-primary" style="padding: 4px 8px; font-size: 10px;" onclick="updateOrderStatus(this)">Aprobar</button></td>
+                `;
+                tbody.prepend(newRow);
+                alert('¡Pedido ' + newId + ' registrado con éxito!');
+            }
+        }
+
+        function updateOrderStatus(btn) {
+            const td = btn.parentElement.previousElementSibling;
+            td.innerHTML = '<span class="status-badge completed">Completado</span>';
+            btn.parentElement.innerHTML = '<span style="font-size: 11px; color: var(--text-secondary);">Finalizado</span>';
+        }
+    </script>
+</body>
+</html>
